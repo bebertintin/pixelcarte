@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PixelCarte – Pixelisateur d’image</title>
+<meta name="description" content="Outil gratuit pour transformer une image en pixel art numéroté : grille, cadres, numéros et codes couleur, palette imposée.">
+<meta property="og:type" content="website"><meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="PixelCarte – Transforme une image en pixel art numéroté">
+<meta property="og:description" content="Outil gratuit : grille, cadres, numéros et codes couleur, palette imposée. Idéal pour reproduire une image case par case.">
+<meta name="twitter:card" content="summary">
+<meta name="google-site-verification" content="9w5tS0gAuDGDbdksJtRTZp7X3AB1j656ClZRxwM_ey0" />
+<style>
+:root{--bg:#f6f5f2;--fg:#1c1b19;--card:#fff;--line:#0002;--mut:#6b6a66;--ac:#e8590c;--ac2:#f59f00;--acfg:#fff;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141413;--fg:#eceae4;--card:#1f1e1c;--line:#fff2;--mut:#9b9990;--ac:#ff922b;--ac2:#ffd43b;--acfg:#1a1000;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141413;--fg:#eceae4;--card:#1f1e1c;--line:#fff2;--mut:#9b9990;--ac:#ff922b;--ac2:#ffd43b;--acfg:#1a1000;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;padding:16px}
+header,.app{max-width:1100px;margin-inline:auto}
+header{margin-bottom:16px}
+h1{margin:0;font-size:1.6rem;letter-spacing:-.02em}
+h1 span{background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
+header p{margin:4px 0 0;color:var(--mut)}
+.app{display:grid;gap:16px}
+@media(min-width:880px){.app{grid-template-columns:330px 1fr;align-items:start}.pv{position:sticky;top:16px}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}
+.drop{display:flex;flex-direction:column;align-items:center;gap:2px;border:2px dashed var(--ac);border-radius:14px;padding:18px;text-align:center;cursor:pointer;margin-bottom:10px}
+.drop small{color:var(--mut)}
+details{border-top:1px solid var(--line);padding:8px 0}
+summary{font-weight:650;cursor:pointer;padding:4px 0}
+.f{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.88rem;color:var(--mut);margin-top:8px}
+.f b{color:var(--fg);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--ac)}
+input[type=checkbox]{accent-color:var(--ac);width:18px;height:18px}
+input[type=number],select,textarea{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit}
+input[type=number]{width:62px}
+select{max-width:100%}
+textarea{width:100%;height:84px;font-family:ui-monospace,monospace;font-size:.8rem;margin-top:6px}
+input[type=color]{width:36px;height:28px;border:0;padding:0;background:none}
+button{background:var(--ac);color:var(--acfg);border:0;border-radius:10px;padding:9px 12px;font:inherit;font-weight:600;cursor:pointer}
+button.g{background:var(--bg);color:var(--fg);border:1px solid var(--line)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.cv{touch-action:pan-x pan-y;overflow:auto;border-radius:10px;background:repeating-conic-gradient(#8883 0 25%,transparent 0 50%) 0 0/16px 16px}
+canvas{display:block;margin:auto;image-rendering:pixelated}
+canvas.fit{max-width:100%;height:auto}
+.empty{padding:60px 16px;text-align:center;color:var(--mut)}
+.lst{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.cl{display:flex;align-items:center;gap:6px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:4px 8px;font-size:.82rem;font-weight:400}
+.cl.on{outline:2px solid var(--ac)}
+.cl i{width:18px;height:18px;border-radius:5px;border:1px solid var(--line)}
+.cl span{color:var(--mut)}
+#info{color:var(--mut);display:block;margin-top:8px}
+
+.nav,.hero,.sec,footer{max-width:1100px;margin-inline:auto}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.nav a{margin-left:16px;color:var(--mut);text-decoration:none}
+.hero{text-align:center;padding:36px 0 28px}
+.hero h1{font-size:clamp(1.8rem,5vw,3rem);line-height:1.1}
+.hero p{max-width:560px;margin:14px auto 22px;color:var(--mut);font-size:1.05rem}
+.cta{display:inline-block;background:var(--ac);color:var(--acfg);padding:12px 22px;border-radius:12px;font-weight:700;text-decoration:none}
+.sec{margin-top:56px}.sec h2{margin:0 0 14px;font-size:1.4rem}
+.grid3{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.grid3 p{margin:4px 0 0;color:var(--mut)}
+.num{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--ac);color:var(--acfg);font-weight:700}
+.sec details p{margin:4px 0 8px;color:var(--mut)}
+footer{margin-top:56px;margin-bottom:16px;color:var(--mut);text-align:center;font-size:.85rem}
+html{scroll-behavior:smooth}
+input.ac{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit}
+.ct{display:grid;gap:10px;max-width:520px}.ct label{font-size:.88rem;color:var(--mut);display:grid;gap:4px}.ct input,.ct textarea{width:100%;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font:inherit;margin:0}.ct textarea{height:120px}#cm{color:var(--mut);font-size:.88rem}#cm button{margin-left:6px}
+</style></head><body>
+<nav class="nav"><b>🟧 PixelCarte <small style="color:var(--mut);font-weight:400">par Bebertintin</small></b><span><a href="#outil">Outil</a><a href="#guide">Guide</a><a href="#faq">FAQ</a><a href="#contact">Contact</a></span></nav>
+<section class="hero"><h1>Transforme une image en <span>pixel art numéroté</span></h1><p>Charge une image, choisis la taille de ta grille, et obtiens une carte prête à reproduire case par case : numéros de couleur, codes hex, cadres et grille.</p><a class="cta" href="#outil">Essayer l’outil</a></section>
+<div id="outil">
+<main class="app">
+<aside class="card">
+<label class="drop"><input id="f" type="file" accept="image/*" hidden><b>Choisir une image</b><small>ou glisse-la ici, ou colle-la (Ctrl+V)</small></label>
+<details open id="acct"><summary>Mon compte · mes créations</summary><div id="ac"></div></details>
+<details open><summary>Taille</summary>
+<div class="f"><span>Grille (colonnes × lignes)</span><span><input id="w" type="number" min="1" max="256" value="64"> × <input id="h" type="number" min="1" max="256" value="64" disabled></span></div>
+<div class="f"><span>Garder les proportions de l’image</span><input id="ar" type="checkbox" checked></div>
+<div class="f"><span>Raccourcis</span></div>
+<div class="bar" style="margin:6px 0 0"><button class="g pr" data-v="16">16</button><button class="g pr" data-v="32">32</button><button class="g pr" data-v="50">50</button><button class="g pr" data-v="64">64</button><button class="g pr" data-v="100">100</button><button class="g pr" data-v="128">128</button></div>
+<div class="f"><span>Lissage (moyenne des pixels)</span><input id="sm" type="checkbox" checked></div>
+</details>
+<details><summary>Ajustements</summary>
+<div class="f"><span>Luminosité</span><b id="brv"></b></div><input id="br" type="range" min="-100" max="100" value="0">
+<div class="f"><span>Contraste</span><b id="cov"></b></div><input id="co" type="range" min="-100" max="100" value="0">
+<div class="f"><span>Saturation</span><b id="sav"></b></div><input id="sa" type="range" min="-100" max="100" value="0">
+</details>
+<details open><summary>Couleurs</summary>
+<div class="f"><select id="mode"><option value="auto">Réduire automatiquement</option><option value="free">Toutes les couleurs</option><option value="fixed">Palette imposée</option></select></div>
+<div class="f"><span>Nombre de couleurs</span><b id="kv"></b></div><input id="k" type="range" min="2" max="64" value="16">
+<div class="f"><span>Tramage (dithering)</span><input id="dt" type="checkbox"></div>
+<textarea id="pal" placeholder="Palette imposée : un code hex par ligne&#10;#FF0000&#10;#00FF00&#10;#0000FF"></textarea>
+</details>
+<details open><summary>Affichage</summary>
+<div class="f"><span>Zoom (0 = ajusté à l’écran)</span><b id="zmv"></b></div><input id="zm" type="range" min="0" max="48" value="0">
+<div class="f"><span>Comparer avec l’original</span><input id="cmp" type="checkbox"></div><input id="cs" type="range" min="0" max="100" value="50">
+<div class="f"><span>Numéros de couleur</span><input id="nm" type="checkbox" checked></div>
+<div class="f"><span>Grille</span><span><input id="gc" type="color" value="#808080"> <input id="gr" type="checkbox"></span></div>
+<div class="f"><span>Cadres rectangulaires</span><span><input id="fc" type="color" value="#e11d48"> <input id="fr" type="checkbox"></span></div>
+<div class="f"><span>Taille d’un cadre (cases)</span><span><input id="bw" type="number" min="1" max="256" value="10"> × <input id="bh" type="number" min="1" max="256" value="10"></span></div>
+</details>
+</aside>
+<section class="card pv">
+<div class="bar"><button id="dl">PNG</button><button id="d1" class="g">PNG 1 px = 1 case</button><button id="cc" class="g">Copier les codes</button><button id="ch" class="g">Copier les hex</button><button id="cg" class="g">Copier la grille</button><button id="sh" class="g">Partager</button></div>
+<div class="cv"><div class="empty" id="empty">Choisis une image pour commencer.</div><canvas id="out" hidden></canvas></div>
+<small id="info"></small>
+<div class="lst" id="lst"></div>
+</section>
+</main></div>
+<section class="sec" id="guide"><h2>Comment ça marche</h2><div class="grid3">
+<div class="card"><span class="num">1</span><p><b>Charge ton image</b><br>Choisis-la, glisse-la ou colle-la avec Ctrl+V.</p></div>
+<div class="card"><span class="num">2</span><p><b>Règle la grille</b><br>Colonnes × lignes, nombre de couleurs, ou palette imposée du jeu.</p></div>
+<div class="card"><span class="num">3</span><p><b>Reproduis-la</b><br>Suis les numéros et les cadres, ou copie la grille et les codes couleur.</p></div></div></section>
+<section class="sec"><h2>Ce que tu peux faire</h2><div class="grid3">
+<div class="card"><b>Numéros par couleur</b><p>Chaque case affiche le numéro de sa couleur.</p></div>
+<div class="card"><b>Cadres rectangulaires</b><p>Découpe la grille en blocs étiquetés A1, B1, A2…</p></div>
+<div class="card"><b>Palette imposée</b><p>Colle les codes hex du jeu : seules ces couleurs sont utilisées.</p></div>
+<div class="card"><b>Surlignage</b><p>Clique une couleur pour ne voir que ses cases.</p></div>
+<div class="card"><b>Exports</b><p>PNG haute résolution, PNG 1 px = 1 case, grille et codes copiables.</p></div>
+<div class="card"><b>100 % local</b><p>Ton image reste dans ton navigateur, rien n’est envoyé.</p></div></div></section>
+<section class="sec" id="faq"><h2>Questions fréquentes</h2>
+<details><summary>Quelle taille de grille choisir ?</summary><p>Celle de ta carte dans le jeu. Décoche « Garder les proportions » pour fixer colonnes et lignes à la main.</p></details>
+<details><summary>Comment respecter les couleurs du jeu ?</summary><p>Dans Couleurs, choisis « Palette imposée » et colle les codes hex, un par ligne.</p></details>
+<details><summary>Pourquoi mon image est floue ou bruitée ?</summary><p>Réduis le nombre de couleurs, active le lissage, ou ajuste contraste et saturation.</p></details>
+<details><summary>Mes images sont-elles envoyées quelque part ?</summary><p>Non, tout le traitement se fait dans ton navigateur.</p></details></section>
+<section class="sec" id="contact"><h2>Contact</h2><form class="card ct" id="cf">
+<label>Ton nom<input id="cn" required maxlength="80"></label>
+<label>Ton e-mail (pour te répondre)<input id="ce" type="email" required maxlength="120"></label>
+<label>Message<textarea id="cb" required maxlength="2000"></textarea></label>
+<button type="submit">Envoyer</button><div id="cm"></div></form></section>
+<footer>Créé par Bebertintin · PixelCarte, pixélisateur d’image pour cartes en pixel art<br>Confidentialité : si tu crées un compte, ton e-mail et tes créations sont enregistrés sur le serveur du site, uniquement pour te les afficher. Pour les supprimer, écris-moi via le formulaire de contact. Statistiques anonymes avec GoatCounter.</footer>
+<script>
+const $=id=>document.getElementById(id),hex=(r,g,b)=>'#'+[r,g,b].map(v=>Math.round(v).toString(16).padStart(2,'0')).join('').toUpperCase();
+let img=null,S=null,sel=0;const out=$('out');
+function load(f){if(!f)return;const im=new Image();im.onload=()=>{img=im;sel=0;$('empty').hidden=true;out.hidden=false;render()};im.src=URL.createObjectURL(f)}
+$('f').onchange=e=>load(e.target.files[0]);
+document.querySelector('.drop').addEventListener('dragover',e=>e.preventDefault());
+document.querySelector('.drop').addEventListener('drop',e=>{e.preventDefault();load(e.dataTransfer.files[0])});
+addEventListener('paste',e=>{const f=[...(e.clipboardData?.files||[])][0];if(f)load(f)});
+document.querySelectorAll('aside input:not(#f):not(#cs):not(.ac),aside select,aside textarea').forEach(el=>el.addEventListener('input',render));
+function kmeans(px,k){const cs=[];for(let i=0;i<k;i++)cs.push(px[Math.floor(i*px.length/k)].slice());
+ for(let it=0;it<8;it++){const s=cs.map(()=>[0,0,0,0]);
+  for(const p of px){let b=0,bd=1e9;for(let j=0;j<k;j++){const d=(p[0]-cs[j][0])**2+(p[1]-cs[j][1])**2+(p[2]-cs[j][2])**2;if(d<bd){bd=d;b=j}}s[b][0]+=p[0];s[b][1]+=p[1];s[b][2]+=p[2];s[b][3]++}
+  s.forEach((v,j)=>{if(v[3])cs[j]=[v[0]/v[3],v[1]/v[3],v[2]/v[3]]})}
+ return cs.map(c=>c.map(Math.round))}
+function render(){
+ document.querySelectorAll('input[type=range]').forEach(r=>{const o=$(r.id+'v');if(o)o.textContent=r.value});
+ if(!img)return;
+ const pw=Math.min(256,Math.max(1,+$('w').value||1)),H0=$('ar').checked?0:Math.min(256,Math.max(1,+$('h').value||1)),ph=H0||Math.max(1,Math.round(pw*img.height/img.width));
+ $('h').disabled=$('ar').checked;if($('ar').checked)$('h').value=ph;
+ const c=document.createElement('canvas');c.width=pw;c.height=ph;const s=c.getContext('2d',{willReadFrequently:true});
+ s.imageSmoothingEnabled=$('sm').checked;s.imageSmoothingQuality='high';s.drawImage(img,0,0,pw,ph);
+ const d=s.getImageData(0,0,pw,ph),a=d.data,n=pw*ph;
+ const br=+$('br').value*2.55,cn=+$('co').value*2.55,sa=1+$('sa').value/100,cf=259*(cn+255)/(255*(259-cn));
+ for(let i=0;i<a.length;i+=4){const l=.299*a[i]+.587*a[i+1]+.114*a[i+2];for(let j=0;j<3;j++)a[i+j]=cf*(l+(a[i+j]-l)*sa+br-128)+128}
+ const mode=$('mode').value;let pal=null,fixed=false;
+ if(mode=='fixed'){pal=($('pal').value.match(/#?[0-9a-fA-F]{6}\b/g)||[]).map(t=>{t=t.replace('#','');return[0,2,4].map(o=>parseInt(t.substr(o,2),16))});fixed=pal.length>0;if(!fixed)pal=null}
+ else if(mode=='auto'){const px=[];for(let i=0;i<a.length;i+=4)if(a[i+3]>=128)px.push([a[i],a[i+1],a[i+2]]);if(px.length)pal=kmeans(px,Math.min(+$('k').value,px.length))}
+ if(pal){const dith=$('dt').checked,e=dith?Float32Array.from(a):null;
+  for(let y=0;y<ph;y++)for(let x=0;x<pw;x++){const i=(y*pw+x)*4;if(a[i+3]<128)continue;
+   const p=dith?[e[i],e[i+1],e[i+2]]:[a[i],a[i+1],a[i+2]];let b=0,bd=1e9;
+   for(let j=0;j<pal.length;j++){const q=pal[j],dd=(p[0]-q[0])**2+(p[1]-q[1])**2+(p[2]-q[2])**2;if(dd<bd){bd=dd;b=j}}
+   const q=pal[b];a[i]=q[0];a[i+1]=q[1];a[i+2]=q[2];
+   if(dith)[[1,0,7],[-1,1,3],[0,1,5],[1,1,1]].forEach(([dx,dy,w])=>{const X=x+dx,Y=y+dy;if(X<0||X>=pw||Y>=ph)return;const k=(Y*pw+X)*4;for(let j=0;j<3;j++)e[k+j]+=(p[j]-q[j])*w/16})}}
+ for(let i=3;i<a.length;i+=4)a[i]=a[i]<128?0:255;
+ s.putImageData(d,0,0);
+ const cnt={};for(let i=0;i<a.length;i+=4)if(a[i+3]){const h=hex(a[i],a[i+1],a[i+2]);cnt[h]=(cnt[h]||0)+1}
+ let L;
+ if(fixed){L=[...new Set(pal.map(q=>hex(...q)))].map((h,i)=>[h,cnt[h]||0,i+1]).filter(r=>r[1])}
+ else L=Object.entries(cnt).sort((x,y)=>y[1]-x[1]).map(([h,v],i)=>[h,v,i+1]);
+ const ix={};L.forEach(r=>ix[r[0]]=r[2]);
+ const nums=new Uint16Array(n);for(let p=0;p<n;p++)nums[p]=a[p*4+3]?ix[hex(a[p*4],a[p*4+1],a[p*4+2])]:0;
+ S={pw,ph,c,d,L,nums};
+ $('lst').innerHTML=L.slice(0,300).map(([h,v,k])=>`<button class="cl${sel==k?' on':''}" data-k="${k}"><b>${k}</b><i style="background:${h}"></i><code data-c="${h}" style="cursor:copy">${h} ⧉</code><span>${v}</span></button>`).join('');
+ $('info').textContent=`${pw} × ${ph} cases · ${L.length} couleurs · touche une couleur pour la surligner, ou son code pour le copier`;
+ draw(out,zoom());
+}
+function zoom(){const z=+$('zm').value,m=Math.max(S.pw,S.ph);out.className=z?'':'fit';return Math.min(z||($('nm').checked?16:Math.max(2,Math.floor(640/m))),Math.floor(4096/m))||1}
+function draw(c,z){
+ const {pw,ph,nums}=S,q=S.d.data;c.width=pw*z;c.height=ph*z;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(S.c,0,0,c.width,c.height);
+ if(sel){x.fillStyle='rgba(30,30,30,.78)';for(let p=0;p<nums.length;p++)if(nums[p]&&nums[p]!=sel)x.fillRect(p%pw*z,Math.floor(p/pw)*z,z,z)}
+ if($('nm').checked&&z>=10){x.textAlign='center';x.textBaseline='middle';x.font=`bold ${Math.round(z*.5)}px system-ui,sans-serif`;
+  for(let p=0;p<nums.length;p++){if(!nums[p]||(sel&&nums[p]!=sel))continue;const i=p*4;x.fillStyle=.299*q[i]+.587*q[i+1]+.114*q[i+2]>140?'#000':'#fff';x.fillText(nums[p],p%pw*z+z/2,Math.floor(p/pw)*z+z/2+1)}}
+ if($('gr').checked&&z>=4){x.strokeStyle=$('gc').value;x.globalAlpha=.55;x.lineWidth=1;x.beginPath();
+  for(let i=0;i<=pw;i++){x.moveTo(i*z+.5,0);x.lineTo(i*z+.5,c.height)}for(let i=0;i<=ph;i++){x.moveTo(0,i*z+.5);x.lineTo(c.width,i*z+.5)}x.stroke();x.globalAlpha=1}
+ if($('fr').checked){const bw=Math.max(1,+$('bw').value||10),bh=Math.max(1,+$('bh').value||10),lw=Math.max(2,Math.round(z/3));
+  x.strokeStyle=$('fc').value;x.lineWidth=lw;x.textAlign='start';x.textBaseline='top';x.strokeRect(lw/2,lw/2,c.width-lw,c.height-lw);x.beginPath();
+  for(let i=bw;i<pw;i+=bw){x.moveTo(i*z,0);x.lineTo(i*z,c.height)}for(let i=bh;i<ph;i+=bh){x.moveTo(0,i*z);x.lineTo(c.width,i*z)}x.stroke();
+  if(bw*z>=28&&bh*z>=18){x.font='bold 12px system-ui,sans-serif';
+   for(let r=0;r*bh<ph;r++)for(let k=0;k*bw<pw;k++){const t=(k>=26?String.fromCharCode(64+Math.floor(k/26)):'')+String.fromCharCode(65+k%26)+(r+1),tx=k*bw*z+3,ty=r*bh*z+2;x.fillStyle='rgba(0,0,0,.65)';x.fillRect(tx-2,ty-1,x.measureText(t).width+4,15);x.fillStyle='#fff';x.fillText(t,tx,ty)}}}
+ if(c===out&&$('cmp').checked&&img){const px=Math.round(c.width*$('cs').value/100);x.save();x.beginPath();x.rect(0,0,px,c.height);x.clip();x.imageSmoothingEnabled=true;x.drawImage(img,0,0,c.width,c.height);x.restore();x.fillStyle='#fff';x.shadowColor='#000';x.shadowBlur=6;x.fillRect(px-2,0,4,c.height);x.beginPath();x.arc(px,c.height/2,14,0,7);x.fill();x.shadowBlur=0}
+}
+$('lst').onclick=e=>{const cx=e.target.closest('code');if(cx){cp(cx.dataset.c,cx);return}const b=e.target.closest('.cl');if(!b||!S)return;const k=+b.dataset.k;sel=sel==k?0:k;document.querySelectorAll('.cl').forEach(x=>x.classList.toggle('on',+x.dataset.k==sel));draw(out,zoom())};
+function save(c,n){const a=document.createElement('a');a.download=n;a.href=c.toDataURL('image/png');a.click()}
+$('dl').onclick=()=>{if(!S)return;const t=document.createElement('canvas'),o=sel;sel=0;draw(t,Math.min(Math.max(+$('zm').value||16,16),Math.floor(4096/Math.max(S.pw,S.ph)))||1);sel=o;save(t,'pixel-art.png')};
+$('d1').onclick=()=>{if(S)save(S.c,'pixel-art-1px.png')};
+async function cp(t,b){try{await navigator.clipboard.writeText(t)}catch(e){const x=document.createElement('textarea');x.value=t;document.body.append(x);x.select();try{document.execCommand('copy')}catch(_){}x.remove()}const o=b.textContent;b.textContent='Copié ✓';setTimeout(()=>b.textContent=o,1400)}
+$('cc').onclick=e=>{if(S)cp(S.L.map(([h,v,k])=>`${k}  ${h}  (${v} cases)`).join('\n'),e.target)};
+$('ch').onclick=e=>{if(S)cp(S.L.map(r=>r[0]).join('\n'),e.target)};
+$('cg').onclick=e=>{if(!S)return;const r=[];for(let y=0;y<S.ph;y++)r.push([...S.nums.slice(y*S.pw,(y+1)*S.pw)].join(' '));cp(r.join('\n'),e.target)};
+document.querySelectorAll('.pr').forEach(b=>b.onclick=()=>{$('w').value=b.dataset.v;if(!$('ar').checked)$('h').value=b.dataset.v;render();saveS()});
+// 2 : sauvegarde des réglages
+const KEYS=['w','h','ar','sm','br','co','sa','mode','k','dt','pal','zm','nm','gc','gr','fc','fr','bw','bh'];
+try{const o=JSON.parse(localStorage.getItem('pc')||'{}');KEYS.forEach(k=>{if(k in o){const e=$(k);if(e.type=='checkbox')e.checked=o[k];else e.value=o[k]}})}catch(_){}
+function saveS(){try{const o={};KEYS.forEach(k=>{const e=$(k);o[k]=e.type=='checkbox'?e.checked:e.value});localStorage.setItem('pc',JSON.stringify(o))}catch(_){}}
+document.querySelectorAll('aside input:not(#f):not(#cs):not(.ac),aside select,aside textarea').forEach(el=>el.addEventListener('input',saveS));
+$('cs').oninput=()=>{if(S)draw(out,zoom())};
+// 3 : pincer pour zoomer
+const cv=document.querySelector('.cv'),P=new Map();let d0=0,z0=0;
+cv.addEventListener('pointerdown',e=>{P.set(e.pointerId,[e.clientX,e.clientY]);if(P.size==2&&S){const[a,b]=[...P.values()];d0=Math.hypot(a[0]-b[0],a[1]-b[1]);z0=+$('zm').value||out.clientWidth/S.pw}});
+cv.addEventListener('pointermove',e=>{if(!P.has(e.pointerId))return;P.set(e.pointerId,[e.clientX,e.clientY]);if(P.size==2&&S&&d0){const[a,b]=[...P.values()],z=Math.max(2,Math.min(48,Math.round(z0*Math.hypot(a[0]-b[0],a[1]-b[1])/d0)));if(z!=+$('zm').value){$('zm').value=z;render();saveS()}}});
+['pointerup','pointercancel','pointerleave'].forEach(t=>cv.addEventListener(t,e=>{P.delete(e.pointerId);if(P.size<2)d0=0}));
+// 5 : partager
+$('sh').onclick=()=>{if(!S)return;const o=sel;sel=0;const t=document.createElement('canvas');draw(t,Math.min(Math.max(+$('zm').value||16,16),Math.floor(2048/Math.max(S.pw,S.ph)))||1);sel=o;
+ const H=Math.max(28,Math.round(t.width/28)),c=document.createElement('canvas');c.width=t.width;c.height=t.height+H;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(t,0,0);x.fillStyle='#e8590c';x.font=`bold ${Math.round(H*.55)}px system-ui,sans-serif`;x.textBaseline='middle';
+ const url=location.href.split('#')[0];x.fillText('Fait avec PixelCarte'+(/^http/.test(location.protocol)?' · '+location.host+location.pathname.replace(/\/$/,''):''),H/2,t.height+H/2);
+ c.toBlob(async b=>{const f=new File([b],'pixel-art.png',{type:'image/png'});try{if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f],text:'Fait avec PixelCarte '+url});else save(c,'pixel-art-partage.png')}catch(e){if(e.name!='AbortError')save(c,'pixel-art-partage.png')}})};
+// 6 : statistiques GoatCounter (colle ton code ici, ex. 'bebertintin')
+const GC='bebertintin';
+if(GC){const g=document.createElement('script');g.async=true;g.dataset.goatcounter='https://'+GC+'.goatcounter.com/count';g.src='//gc.zgo.at/count.js';document.head.append(g)}
+$('cf').onsubmit=async e=>{e.preventDefault();const m=$('cm'),btn=e.target.querySelector('button[type=submit]');
+ const data={name:$('cn').value,email:$('ce').value,message:$('cb').value};
+ btn.disabled=true;m.textContent='Envoi en cours…';
+ try{const r=await fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(data)});
+  if(!r.ok)throw 0;e.target.reset();m.textContent='Merci ! Ton message a bien été envoyé.'}
+ catch(_){m.textContent='Oups, l’envoi a échoué. Réessaie dans un instant.'}
+ btn.disabled=false};
+// 8 : comptes et créations (serveur Python)
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function api(url,method='GET',body){try{const r=await fetch(url,{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const j=await r.json().catch(()=>({}));return r.ok?{data:j}:{error:j.error||'Erreur '+r.status}}catch(_){return{error:'Serveur injoignable.'}}}
+let user=null;const ac=$('ac');
+const msg=t=>{const m=$('am');if(m)m.textContent=t||''};
+function ui(){
+ if(!user){ac.innerHTML=`<div class="f"><input id="ae" class="ac" type="email" placeholder="E-mail" autocomplete="email" style="width:100%"></div><div class="f"><input id="ap" class="ac" type="password" placeholder="Mot de passe (8 caractères min.)" autocomplete="current-password" style="width:100%"></div><div class="bar" style="margin:8px 0 0"><button id="ali">Se connecter</button><button id="asu" class="g">Créer un compte</button></div><div class="f"><a href="#contact" id="afo" style="color:var(--ac)">Mot de passe oublié ?</a></div><small id="am"></small>`;
+  $('ali').onclick=()=>auth('/api/login');$('asu').onclick=()=>auth('/api/register');$('afo').onclick=()=>msg('Écris-moi via le formulaire de contact en bas de page.');return}
+ ac.innerHTML=`<div class="f"><span>Connecté : <b>${esc(user.email)}</b></span><button id="alo" class="g">Déconnexion</button></div><div class="f"><input id="an" class="ac" maxlength="60" placeholder="Nom de la création" style="width:100%"></div><div class="bar" style="margin:8px 0 0"><button id="asv">Enregistrer cette création</button></div><small id="am"></small><div class="lst" id="al" style="display:grid"></div>`;
+ $('alo').onclick=async()=>{await api('/api/logout','POST',{});user=null;ui()};$('asv').onclick=saveC;list()}
+async function auth(url){const {data,error}=await api(url,'POST',{email:$('ae').value.trim(),password:$('ap').value});if(error)return msg(error);user=data.user;ui()}
+async function saveC(){if(!S||!img)return msg('Charge d’abord une image.');const name=$('an').value.trim()||'Sans titre';
+ const r=Math.min(1,640/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*r));c.height=Math.max(1,Math.round(img.height*r));c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+ const f=Math.max(1,Math.floor(64/Math.max(S.pw,S.ph))),t=document.createElement('canvas');t.width=S.pw*f;t.height=S.ph*f;const tx=t.getContext('2d');tx.imageSmoothingEnabled=false;tx.drawImage(S.c,0,0,t.width,t.height);
+ const st={};KEYS.forEach(k=>{const e=$(k);st[k]=e.type=='checkbox'?e.checked:e.value});
+ msg('Enregistrement…');const {error}=await api('/api/creations','POST',{name,data:{settings:st,image:c.toDataURL('image/webp',.9),thumb:t.toDataURL('image/png')}});
+ if(error)return msg('Échec : '+error);msg('Enregistré ✓');$('an').value='';list()}
+async function list(){const el=$('al');if(!el)return;const {data,error}=await api('/api/creations');
+ if(error){el.textContent='Impossible de charger tes créations : '+error;return}
+ const L=data.creations;
+ el.innerHTML=L.length?L.map(r=>`<div class="cl" style="justify-content:space-between"><span style="display:flex;align-items:center;gap:8px;min-width:0">${r.thumb?`<img src="${esc(r.thumb)}" width="36" height="36" style="object-fit:contain;image-rendering:pixelated;border-radius:4px">`:''}<b style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--fg)">${esc(r.name)}</b></span><span><button class="g" data-o="${r.id}">Ouvrir</button> <button class="g" data-d="${r.id}">✕</button></span></div>`).join(''):'<small>Aucune création enregistrée pour le moment.</small>';
+ el.onclick=async e=>{const o=e.target.dataset.o,d=e.target.dataset.d;if(o)openC(o);
+  if(d&&confirm('Supprimer cette création ?')){const {error}=await api('/api/creations/'+d,'DELETE');if(error)msg(error);list()}}}
+async function openC(id){msg('Ouverture…');const {data,error}=await api('/api/creations/'+id);if(error)return msg(error);
+ const cr=data.creation,st=cr.data.settings||{};KEYS.forEach(k=>{if(k in st){const e=$(k);if(e.type=='checkbox')e.checked=st[k];else e.value=st[k]}});
+ const im=new Image();im.onload=()=>{img=im;sel=0;$('empty').hidden=true;out.hidden=false;render();saveS();$('an').value=cr.name;msg('« '+cr.name+' » ouverte.');out.scrollIntoView({behavior:'smooth',block:'start'})};im.src=cr.data.image}
+(async()=>{const {data}=await api('/api/me');user=data?.user||null;ui()})();
+
+render();
+</script></body></html>
